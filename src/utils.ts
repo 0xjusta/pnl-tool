@@ -1,6 +1,8 @@
 import { Connection, GetVersionedTransactionConfig, LAMPORTS_PER_SOL, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import { sha256 } from "js-sha256";
 import { PnlTokens } from "./types";
+import axios from "axios";
+import { HELIUS_API_KEY } from "./constants";
 
 export async function sleep(time: number) {
     return new Promise(resolve => setTimeout(resolve, time));
@@ -102,46 +104,25 @@ export function chunkArray<T>(array: T[], size: number): T[][] {
     return result;
 }
 
-export async function getTransactions(connection: Connection, address: string, limit: number, minBlock?: number) {
+export async function getTransactions(address: string, limit: number, minBlock: number = 0) {
 
     let lastSignature = undefined;
     let transactions = [];
 
     while (true) {
-
         try {
-            console.log(lastSignature);
-            const ret = await connection.getSignaturesForAddress(new PublicKey(address), {
-                limit,
-                before: lastSignature
-            }, 'finalized');
-            if (ret.length == 0) {
+            const { data } = await axios.get(`https://api.helius.xyz/v0/addresses/${address}/transactions?api-key=${HELIUS_API_KEY}&limit=100&before=${lastSignature ?? ""}`);
+            console.log(lastSignature, data.length);
+            if (data.length == 0) {
                 break;
             }
 
-            lastSignature = ret[ret.length - 1].signature;
-            const signatures = ret.filter(t =>
-                !t.err && (!minBlock || (minBlock && ((t.blockTime ?? 0) >= minBlock)))
-            ).map(t => t.signature);
+            transactions = transactions.concat(data.filter(t => t.timestamp >= minBlock));
 
-            let _transactions = await connection.getParsedTransactions(signatures, {
-                commitment: 'finalized',
-                maxSupportedTransactionVersion: 0,
-            } as GetVersionedTransactionConfig);
-            console.log(_transactions.length);
-            _transactions = _transactions.filter(t => !!t);
-            if (_transactions.length > 0) {
-                transactions = transactions.concat(_transactions);
-            }
+            const lastItem = data[data.length - 1];
+            lastSignature = lastItem.signature;
 
-            if (minBlock) {
-                const lastBlock = ret[ret.length - 1].blockTime ?? 0;
-                if (lastBlock < minBlock) {
-                    break;
-                }
-            }
-
-            if (ret.length < limit) {
+            if (lastItem.timestamp < minBlock) {
                 break;
             }
         }
@@ -151,7 +132,7 @@ export async function getTransactions(connection: Connection, address: string, l
         }
     }
 
-    return transactions.sort((a, b) => (b.blockTime ?? 0) - (a.blockTime ?? 0));
+    return transactions.sort((a, b) => b.slot - a.slot);
 }
 
 export async function fetchMintInfos(connection: Connection, tokens: PnlTokens) {

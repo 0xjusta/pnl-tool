@@ -15,6 +15,8 @@ export type PnlToken = {
     openBlock: number;
     athPrice: number;
     athBlock: number;
+    openSignature: string;
+    athSignature: string;
     mintAuthority: string;
     freezeAuthority: string;
 }
