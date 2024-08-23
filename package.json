@@ -1,0 +1,30 @@
+{
+  "name": "pnl-tool",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "0xmolly",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc & node dist/index.js"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@prisma/client": "^5.18.0",
+    "@solana/spl-token": "^0.4.8",
+    "@solana/web3.js": "^1.95.2",
+    "@types/bs58": "^4.0.4",
+    "@types/node": "^22.4.1",
+    "axios": "^1.7.3",
+    "bignumber.js": "^9.1.2",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.5",
+    "googleapis": "^142.0.0",
+    "js-sha256": "^0.11.0",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
