@@ -1,6 +1,6 @@
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { chunkArray, compareUintArray, getDiscriminator, getTransactions, sleep } from "./utils";
-import base58 = require("bs58");
+import base58 from "bs58";
 import { PnlToken, PnlTokens } from "./types";
 import { clearSheet, submitSheet } from "./sheet";
 import { PUMPFUN_MINT_AUTHORITY, PUMPFUN_PROGRAM_ID, RAYDIUM_V4_PROGRAM_ID, RAYDIUM_V4_TEMP_LP, WSOL_MINT } from "./constants";
@@ -10,7 +10,6 @@ import { BorshCoder, BN } from "@coral-xyz/anchor";
 import { base64 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 import { getLogger } from "./logger";
 
-const bs58 = base58.default;
 const pfCoder = new BorshCoder(IDL);
 const EVENT_DISCRIMINATOR = [228, 69, 165, 46, 81, 203, 154, 29];
 const gainLimit = 500;
@@ -105,7 +104,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
                         continue;
                     }
 
-                    const args = bs58.decode(data.toString());
+                    const args = base58.decode(data.toString());
                     const discriminator = args.subarray(0, 8);
                     if (!compareUintArray(discriminator, EVENT_DISCRIMINATOR)) {
                         continue;

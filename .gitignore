@@ -6,5 +6,11 @@ dist/**/*
 .env
 .env.prod
 
+credential.json
+
 package-lock.json
+yarn.lock
+
 *.db
+
+*.log

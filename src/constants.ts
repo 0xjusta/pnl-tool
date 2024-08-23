@@ -5,6 +5,7 @@ dotenv.config();
 
 export const HELIUS_API_KEY = process.env.HELIUS_KEY ?? "";
 export const BIRDEYE_KEY = process.env.BIRDEYE_KEY ?? "";
+export const SPREADSHEET_ID = process.env.SPREADSHEET_ID ?? "";
 
 export const WSOL_MINT = "So11111111111111111111111111111111111111112";
 export const USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

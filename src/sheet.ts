@@ -1,12 +1,12 @@
 import { google } from 'googleapis';
 import { sleep } from './utils';
+import { SPREADSHEET_ID } from './constants';
 
 const auth = new google.auth.GoogleAuth({
     keyFile: "./credential.json",
     scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 });
 const sheet = google.sheets("v4")
-const spreadsheetId = "1YuQtQV_3EdN6_Mc3DACtJZV3PaR8C7XwhQlUpGfQ708";
 
 
 function numberToChar(num: number): string | undefined {
@@ -25,7 +25,7 @@ export const submitSheet = async (table: string, cell: number, data: (string | n
     for (let i = 0; i < 10; i++) {
         try {
             const ret = await sheet.spreadsheets.values.append({
-                spreadsheetId,
+                spreadsheetId: SPREADSHEET_ID,
                 auth: auth,
                 range: `${table}!A${cell}:${lastChar}${cell}`,
                 valueInputOption: "RAW",
@@ -46,7 +46,7 @@ export const submitSheet = async (table: string, cell: number, data: (string | n
 
 export const clearSheet = async (table: string) => {
     const ret = await sheet.spreadsheets.values.clear({
-        spreadsheetId,
+        spreadsheetId: SPREADSHEET_ID,
         auth: auth,
         range: `${table}!A2:Z`,
     });

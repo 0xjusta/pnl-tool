@@ -1,13 +1,12 @@
 import { Connection } from "@solana/web3.js";
 import { chunkArray, fetchMintInfos, getTransactions, sleep } from "./utils";
-import base58 = require("bs58");
 import { PnlToken, PnlTokens } from "./types";
 import { clearSheet, submitSheet } from "./sheet";
 import { BIRDEYE_KEY, RAYDIUM_V4_PROGRAM_ID, RAYDIUM_V4_TEMP_LP, WSOL_MINT } from "./constants";
 import axios from "axios";
 import { getLogger } from "./logger";
+import base58 from "bs58";
 
-const bs58 = base58.default;
 const gainLimit = 500;
 const logger = getLogger();
 
@@ -89,7 +88,7 @@ export async function fetchRaydiumTrades(connection: Connection) {
             const { programId, accounts, data } = ix;
 
             if (programId == RAYDIUM_V4_PROGRAM_ID) {
-                const args = bs58.decode(data.toString());
+                const args = base58.decode(data.toString());
                 if (args[0] == 1) {
                     // https://github.com/raydium-io/raydium-amm/blob/ec2ef3d3f92c69644fba9640a2556f34233dc30e/program/src/instruction.rs#L836
                     lpAddress = accounts[4];
