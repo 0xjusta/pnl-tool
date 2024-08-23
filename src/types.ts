@@ -7,7 +7,6 @@ export type TransactionType = {
 };
 
 export type PnlToken = {
-    idx: number;
     mint: string;
     lpAddress: string;
     creator: string;
@@ -15,12 +14,10 @@ export type PnlToken = {
     openBlock: number;
     athPrice: number;
     athBlock: number;
-    openSignature: string;
-    athSignature: string;
     mintAuthority: string;
     freezeAuthority: string;
 }
 
-export type PnlTokens = { [key in string]: PnlToken };
+export type PnlTokens = PnlToken[];
 
 export type Prices = { [key in string]: number };

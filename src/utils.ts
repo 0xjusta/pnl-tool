@@ -104,7 +104,7 @@ export function chunkArray<T>(array: T[], size: number): T[][] {
     return result;
 }
 
-export async function getTransactions(address: string, limit: number, minBlock: number = 0) {
+export async function getTransactions(address: string, minBlock: number = 0) {
 
     let lastSignature = undefined;
     let transactions = [];

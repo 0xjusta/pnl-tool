@@ -4,9 +4,12 @@ import { fetchRaydiumTrades } from "./lp";
 import { PrismaClient } from "@prisma/client";
 import { Prices } from "./types";
 import { getSolPrice } from "./utils";
+import { fetchPupmfunTrades } from "./pf";
+import { Logger } from "pino";
+import { getLogger } from "./logger";
 
 declare global {
-    var prices: Prices
+    var prices: Prices;
 };
 
 (async () => {
@@ -20,8 +23,12 @@ declare global {
         globalThis.prices[item.blockTime] = item.price;
     }
 
+    const logger = getLogger();
+    logger.info(`App started...`);
+
     await Promise.all([
         fetchRaydiumTrades(connection),
+        fetchPupmfunTrades(connection),
     ]);
 
 })();
