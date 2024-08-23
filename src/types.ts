@@ -20,3 +20,5 @@ export type PnlToken = {
 }
 
 export type PnlTokens = { [key in string]: PnlToken };
+
+export type Prices = { [key in string]: number };

@@ -106,11 +106,11 @@ export async function getTransactions(connection: Connection, address: string, l
 
     let lastSignature = undefined;
     let transactions = [];
-    let lastBlock = 0;
 
     while (true) {
 
         try {
+            console.log(lastSignature);
             const ret = await connection.getSignaturesForAddress(new PublicKey(address), {
                 limit,
                 before: lastSignature
@@ -120,7 +120,6 @@ export async function getTransactions(connection: Connection, address: string, l
             }
 
             lastSignature = ret[ret.length - 1].signature;
-            // console.log(lastSignature);
             const signatures = ret.filter(t =>
                 !t.err && (!minBlock || (minBlock && ((t.blockTime ?? 0) >= minBlock)))
             ).map(t => t.signature);
@@ -129,6 +128,7 @@ export async function getTransactions(connection: Connection, address: string, l
                 commitment: 'finalized',
                 maxSupportedTransactionVersion: 0,
             } as GetVersionedTransactionConfig);
+            console.log(_transactions.length);
             _transactions = _transactions.filter(t => !!t);
             if (_transactions.length > 0) {
                 transactions = transactions.concat(_transactions);
@@ -170,4 +170,14 @@ export async function fetchMintInfos(connection: Connection, tokens: PnlTokens) 
     }
 
     return tokens;
+}
+
+export function getSolPrice(blockTime: number) {
+    const times = Object.keys(globalThis.prices);
+    const prevs = times.filter((t) => parseInt(t) < blockTime);
+    if (prevs.length > 0) {
+        return globalThis.prices[prevs[prevs.length - 1]];
+    }
+
+    return globalThis.prices[times[0]];
 }

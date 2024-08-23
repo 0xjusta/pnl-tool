@@ -1,10 +1,10 @@
 import { Connection } from "@solana/web3.js";
-import { chunkArray, fetchMintInfos, getDecimal, getMint, getTransactions, getUiBalance, sleep } from "./utils";
+import { chunkArray, fetchMintInfos, getDecimal, getMint, getSolPrice, getTransactions, getUiBalance, sleep } from "./utils";
 import base58 = require("bs58");
 import { BN } from "@coral-xyz/anchor";
-import { PnlToken, PnlTokens } from "./types";
+import { PnlToken, PnlTokens, Prices } from "./types";
 import { clearSheet, submitSheet } from "./sheet";
-import { HELIUS_API_KEY, RAYDIUM_V4_PROGRAM_ID, RAYDIUM_V4_TEMP_LP, WSOL_MINT } from "./constants";
+import { RAYDIUM_V4_PROGRAM_ID, RAYDIUM_V4_TEMP_LP, WSOL_MINT } from "./constants";
 const bs58 = base58.default;
 
 const limit = 1000;
@@ -55,7 +55,9 @@ async function fetchTokenTrades(connection: Connection, token: PnlToken) {
                     const mintB = getMint(poolVaultB, accountKeys, postTokenBalances);
                     const balanceB = getUiBalance(poolVaultB, accountKeys, postTokenBalances);
 
-                    const price = (mintA == WSOL_MINT ? balanceA : balanceB) / (mintB == WSOL_MINT ? balanceA : balanceB)
+                    const solPrice = getSolPrice(blockTime);
+                    const price = solPrice * (mintA == WSOL_MINT ? balanceA : balanceB) / (mintB == WSOL_MINT ? balanceA : balanceB)
+
                     if (price > athPrice) {
                         athPrice = price;
                         athBlock = blockTime;
@@ -89,7 +91,7 @@ async function fetchTokenTrades(connection: Connection, token: PnlToken) {
     console.log(mint, athPrice);
 }
 
-async function fetchLpTrades(connection: Connection) {
+export async function fetchRaydiumTrades(connection: Connection) {
 
     await clearSheet('Raydium');
 
@@ -97,6 +99,7 @@ async function fetchLpTrades(connection: Connection) {
     const timeDelta = 60 * 60 * 24; // 1 day
 
     const initalizeTxs = await getTransactions(connection, RAYDIUM_V4_TEMP_LP, 1000, now - timeDelta);
+    return;
 
     let tokens: PnlTokens = {};
     let idx = 1;
@@ -141,7 +144,9 @@ async function fetchLpTrades(connection: Connection) {
                     openTime = _openTime > 0 ? _openTime : blockTime;
                     const amountB = new BN(Buffer.from(args.subarray(10, 18)).readBigUInt64LE()) / (10 ** decimalB);
                     const amountA = new BN(Buffer.from(args.subarray(18, 26)).readBigUInt64LE()) / (10 ** decimalA);
-                    price = (mintTokenA == WSOL_MINT ? amountA : amountB) / (mintTokenA == WSOL_MINT ? amountB : amountA);
+
+                    const solPrice = getSolPrice(blockTime);
+                    price = solPrice * (mintTokenA == WSOL_MINT ? amountA : amountB) / (mintTokenA == WSOL_MINT ? amountB : amountA);
                 }
             }
         }

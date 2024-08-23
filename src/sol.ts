@@ -3,26 +3,23 @@ import { sleep } from "./utils";
 import { PrismaClient } from "@prisma/client";
 
 async function getLatestPrice() {
-    const { data } = await axios.get(`https://api.raydium.io/v2/main/price`);
-    return data['So11111111111111111111111111111111111111112'] ?? 0;
+    const { data } = await axios.get(`https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112`);
+    const pairs = data.pairs;
+    return parseFloat(pairs[0].priceUsd) ?? 0;
 }
 
-export function getPrice(blockTime: number) {
-    const times = Object.values(globalThis.prices);
-    
-}
-
-export async function fetchSolPrices() {
-
+(async () => {
     const prisma = new PrismaClient();
+
+    let lastPrice = 0;
 
     while (true) {
 
         try {
             const blockTime = Math.floor(Date.now() / 1000);
             const price = await getLatestPrice();
-            if (price && price > 0) {
-                globalThis.prices[blockTime] = price;
+            if (price && price > 0 && price != lastPrice) {
+                lastPrice = price;
 
                 await prisma.prices.create({
                     data: {
@@ -32,11 +29,11 @@ export async function fetchSolPrices() {
                 });
             }
         }
-        catch {
-
+        catch (ex) {
+            console.log(ex);
         }
 
         await sleep(1000 * 10);
     }
 
-};
+})();

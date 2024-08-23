@@ -7,3 +7,4 @@ dist/**/*
 .env.prod
 
 package-lock.json
+prisma/app.db
