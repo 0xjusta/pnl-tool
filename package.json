@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "author": "0xmolly",
   "scripts": {
-    "build": "tsc & npx primsa generate",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
