@@ -127,7 +127,7 @@ export async function getTransactions(address: string, minBlock: number = 0) {
             }
         }
         catch (ex) {
-            console.log(ex);
+            console.log(`Helius api error: ${address} - ${minBlock}`);
             await sleep(1000);
         }
     }

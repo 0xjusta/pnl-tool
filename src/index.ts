@@ -3,9 +3,8 @@ import { HELIUS_API_KEY } from "./constants";
 import { fetchRaydiumTrades } from "./lp";
 // import { PrismaClient } from "@prisma/client";
 import { Prices } from "./types";
-import { getSolPrice } from "./utils";
+import { sleep } from "./utils";
 import { fetchPupmfunTrades } from "./pf";
-import { Logger } from "pino";
 import { getLogger } from "./logger";
 
 declare global {
@@ -13,7 +12,6 @@ declare global {
 };
 
 (async () => {
-    const connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`);
 
     /*
     const prisma = new PrismaClient();
@@ -25,12 +23,17 @@ declare global {
     }
     */
 
-    const logger = getLogger();
-    logger.info(`App started...`);
+    while (true) {
+        const connection = new Connection(`https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}`);
 
-    await Promise.all([
-        fetchRaydiumTrades(connection),
-        fetchPupmfunTrades(connection),
-    ]);
+        const logger = getLogger();
+        logger.info(`App started...`);
+
+        await Promise.all([
+            fetchRaydiumTrades(connection),
+            fetchPupmfunTrades(connection),
+            sleep(60 * 60 * 12 * 1000)
+        ]);
+    }
 
 })();
