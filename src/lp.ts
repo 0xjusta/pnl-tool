@@ -78,7 +78,7 @@ export async function fetchRaydiumTrades(connection: Connection) {
     const txs = await getTransactions(RAYDIUM_V4_TEMP_LP, now - timeDelta);
     const createPoolTxs = txs.filter(t => t.type == "CREATE_POOL" && t.source == "RAYDIUM");
 
-    let tokens: PnlTokens = [];
+    let tokens: PnlTokens = {};
     for (const tx of createPoolTxs) {
         const { instructions } = tx;
 
@@ -104,7 +104,7 @@ export async function fetchRaydiumTrades(connection: Connection) {
         }
 
         if (mint) {
-            tokens.push({
+            tokens[mint] = {
                 mint,
                 lpAddress,
                 creator,
@@ -114,14 +114,14 @@ export async function fetchRaydiumTrades(connection: Connection) {
                 athBlock: 0,
                 mintAuthority: "",
                 freezeAuthority: "",
-            });
+            };
         }
     }
 
     logger.info(`RayV4: ${tokens.length} tokens fetched`);
 
     tokens = await fetchMintInfos(connection, tokens);
-    for (const token of tokens) {
-        await fetchTokenTrades(token);
+    for (const mint in tokens) {
+        await fetchTokenTrades(tokens[mint]);
     }
 }

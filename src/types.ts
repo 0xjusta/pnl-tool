@@ -18,6 +18,6 @@ export type PnlToken = {
     freezeAuthority: string;
 }
 
-export type PnlTokens = PnlToken[];
+export type PnlTokens = { [key in string]: PnlToken };;
 
 export type Prices = { [key in string]: number };

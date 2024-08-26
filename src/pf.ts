@@ -88,7 +88,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
 
     const txs = await getTransactions(PUMPFUN_MINT_AUTHORITY, now - timeDelta);
 
-    let tokens: PnlTokens = [];
+    let tokens: PnlTokens = {};
     let idx = 1;
     for (const tx of txs) {
         const { signature, instructions, timestamp } = tx;
@@ -134,7 +134,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
         }
 
         if (mint) {
-            tokens.push({
+            tokens[mint] = {
                 mint,
                 lpAddress,
                 creator,
@@ -144,7 +144,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
                 athBlock: 0,
                 mintAuthority: "N/A",
                 freezeAuthority: "N/A",
-            });
+            };
 
             idx++;
         }
@@ -153,8 +153,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
     logger.info(`Pf: ${tokens.length} tokens fetched`);
 
     // tokens = await fetchMintInfos(connection, tokens);
-
-    for (const token of tokens) {
-        await fetchTokenTrades(token);
+    for (const mint in tokens) {
+        await fetchTokenTrades(tokens[mint]);
     }
 }
