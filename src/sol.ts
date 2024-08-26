@@ -1,5 +1,7 @@
 import axios from "axios";
 import { sleep } from "./utils";
+
+/*
 import { PrismaClient } from "@prisma/client";
 
 async function getLatestPrice() {
@@ -37,3 +39,4 @@ async function getLatestPrice() {
     }
 
 })();
+*/
