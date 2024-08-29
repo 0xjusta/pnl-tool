@@ -51,6 +51,7 @@ async function fetchTokenTrades(token: PnlToken) {
             }
         }
         catch (ex) {
+            logger.error(`PF error: ${mint}`);
             await sleep(1000);
         }
     }
@@ -60,13 +61,12 @@ async function fetchTokenTrades(token: PnlToken) {
         logger.info(`Pf gain found: ${mint} - ${gainPercentage} %`);
         await submitSheet(
             "Pumpfun",
-            cell,
             [
                 creator,
                 "Pumpfun",
                 mint,
                 lpAddress,
-                `${gainPercentage} %`,
+                gainPercentage,
                 `${Math.floor((athBlock - openBlock) / 60)} min`,
                 new Date(openBlock * 1000).toLocaleString(),
                 openPrice,
@@ -81,7 +81,7 @@ async function fetchTokenTrades(token: PnlToken) {
 
 export async function fetchPupmfunTrades(connection: Connection) {
 
-    await clearSheet('Pumpfun');
+    // await clearSheet('Pumpfun');
 
     const now = Math.floor(Date.now() / 1000);
     const timeDelta = 60 * 60 * 24; // 1 day

@@ -18,7 +18,7 @@ function numberToChar(num: number): string | undefined {
     return String.fromCharCode(64 + num);
 }
 
-export const submitSheet = async (table: string, cell: number, data: (string | number)[]) => {
+export const submitSheet = async (table: string, data: (string | number)[]) => {
 
     const lastChar = numberToChar(data.length);
 
@@ -27,7 +27,7 @@ export const submitSheet = async (table: string, cell: number, data: (string | n
             const ret = await sheet.spreadsheets.values.append({
                 spreadsheetId: SPREADSHEET_ID,
                 auth: auth,
-                range: `${table}!A${cell}:${lastChar}${cell}`,
+                range: `${table}!A:${lastChar}`,
                 valueInputOption: "RAW",
                 requestBody: {
                     values: [

@@ -49,13 +49,12 @@ async function fetchTokenTrades(token: PnlToken) {
         logger.info(`RayV4 gain found: ${mint} - ${gainPercentage} %`);
         await submitSheet(
             "Raydium",
-            cell,
             [
                 creator,
                 "RaydiumV4",
                 mint,
                 lpAddress,
-                `${gainPercentage} %`,
+                gainPercentage,
                 `${Math.floor((athBlock - openBlock) / 60)} min`,
                 new Date(openBlock * 1000).toLocaleString(),
                 openPrice,
@@ -70,7 +69,7 @@ async function fetchTokenTrades(token: PnlToken) {
 
 export async function fetchRaydiumTrades(connection: Connection) {
 
-    await clearSheet('Raydium');
+    // await clearSheet('Raydium');
 
     const now = Math.floor(Date.now() / 1000);
     const timeDelta = 60 * 60 * 24; // 1 day
