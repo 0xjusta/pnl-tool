@@ -1,4 +1,4 @@
-import { Connection } from "@solana/web3.js";
+import { Connection, ParsedAccountData, PublicKey } from "@solana/web3.js";
 import { chunkArray, fetchMintInfos, getTransactions, sleep } from "./utils";
 import { PnlToken, PnlTokens } from "./types";
 import { clearSheet, submitSheet } from "./sheet";
@@ -9,10 +9,9 @@ import base58 from "bs58";
 
 const gainLimit = 500;
 const logger = getLogger();
+let gainTokens: string[] = [];
 
-let cell = 2;
-
-async function fetchTokenTrades(token: PnlToken) {
+async function fetchTokenTrades(connection: Connection, token: PnlToken) {
     let { creator, mint, lpAddress, mintAuthority, freezeAuthority } = token;
 
     let openPrice, athPrice, openBlock, athBlock;
@@ -46,24 +45,33 @@ async function fetchTokenTrades(token: PnlToken) {
 
     const gainPercentage = Math.floor((athPrice - openPrice) / openPrice * 100);
     if (gainPercentage >= gainLimit) {
-        logger.info(`RayV4 gain found: ${mint} - ${gainPercentage} %`);
-        await submitSheet(
-            "Raydium",
-            [
-                creator,
-                "RaydiumV4",
-                mint,
-                lpAddress,
-                gainPercentage,
-                `${Math.floor((athBlock - openBlock) / 60)} min`,
-                new Date(openBlock * 1000).toLocaleString(),
-                openPrice,
-                athPrice,
-                mintAuthority,
-                freezeAuthority,
-            ]
-        );
-        cell++;
+
+        // Check LP
+        const lpVault = await connection.getParsedAccountInfo(new PublicKey(token.wsolVault));
+        const info = (lpVault.value.data as ParsedAccountData).parsed.info;
+        if (info.mint == WSOL_MINT) {
+            const lpWsol = info.tokenAmount.uiAmount;
+            logger.info(`RayV4 gain found: ${mint} - ${gainPercentage} %, ${lpWsol} SOL`);
+            if (lpWsol >= 1) {
+                gainTokens.push(mint);
+                await submitSheet(
+                    "Raydium",
+                    [
+                        creator,
+                        "RaydiumV4",
+                        mint,
+                        lpAddress,
+                        gainPercentage,
+                        `${Math.floor((athBlock - openBlock) / 60)} min`,
+                        new Date(openBlock * 1000).toLocaleString(),
+                        openPrice,
+                        athPrice,
+                        mintAuthority,
+                        freezeAuthority,
+                    ]
+                );
+            }
+        }
     }
 }
 
@@ -81,7 +89,7 @@ export async function fetchRaydiumTrades(connection: Connection) {
     for (const tx of createPoolTxs) {
         const { instructions } = tx;
 
-        let mint, lpAddress, creator;
+        let mint, lpAddress, creator, wsolVault, tokenVault;
 
         for (const ix of instructions) {
             const { programId, accounts, data } = ix;
@@ -95,14 +103,17 @@ export async function fetchRaydiumTrades(connection: Connection) {
 
                     const mintA = accounts[8];
                     const mintB = accounts[9];
+
                     if (mintA == WSOL_MINT || mintB == WSOL_MINT) {
                         mint = mintB == WSOL_MINT ? mintA : mintB;
+                        wsolVault = mintA == WSOL_MINT ? accounts[10] : accounts[11];
+                        tokenVault = mintB == WSOL_MINT ? accounts[10] : accounts[11];
                     }
                 }
             }
         }
 
-        if (mint) {
+        if (mint && !gainTokens.includes(mint)) {
             tokens[mint] = {
                 mint,
                 lpAddress,
@@ -111,8 +122,11 @@ export async function fetchRaydiumTrades(connection: Connection) {
                 openBlock: 0,
                 athPrice: 0,
                 athBlock: 0,
+                wsolVault,
+                tokenVault,
                 mintAuthority: "",
                 freezeAuthority: "",
+
             };
         }
     }
@@ -121,6 +135,11 @@ export async function fetchRaydiumTrades(connection: Connection) {
 
     tokens = await fetchMintInfos(connection, tokens);
     for (const mint in tokens) {
-        await fetchTokenTrades(tokens[mint]);
+        try {
+            await fetchTokenTrades(connection, tokens[mint]);
+        }
+        catch (ex) {
+            logger.error(`RayV4 fetch error: ${mint}`);
+        }
     }
 }

@@ -12,10 +12,10 @@ import { getLogger } from "./logger";
 
 const pfCoder = new BorshCoder(IDL);
 const EVENT_DISCRIMINATOR = [228, 69, 165, 46, 81, 203, 154, 29];
+
 const gainLimit = 500;
 const logger = getLogger();
-
-let cell = 2;
+let gainTokens: string[] = [];
 
 async function fetchTokenTrades(token: PnlToken) {
     let { creator, mint, lpAddress, openPrice, athPrice, openBlock, athBlock, mintAuthority, freezeAuthority } = token;
@@ -57,8 +57,9 @@ async function fetchTokenTrades(token: PnlToken) {
     }
 
     const gainPercentage = Math.floor((athPrice - openPrice) / openPrice * 100);
+
     if (gainPercentage >= gainLimit) {
-        logger.info(`Pf gain found: ${mint} - ${gainPercentage} %`);
+        logger.info(`Pf gain found: ${mint} - ${gainPercentage}%`);
         await submitSheet(
             "Pumpfun",
             [
@@ -75,7 +76,6 @@ async function fetchTokenTrades(token: PnlToken) {
                 freezeAuthority,
             ]
         );
-        cell++;
     }
 }
 
@@ -133,7 +133,7 @@ export async function fetchPupmfunTrades(connection: Connection) {
             }
         }
 
-        if (mint) {
+        if (mint && !gainTokens.includes(mint)) {
             tokens[mint] = {
                 mint,
                 lpAddress,

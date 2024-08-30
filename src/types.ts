@@ -16,6 +16,9 @@ export type PnlToken = {
     athBlock: number;
     mintAuthority: string;
     freezeAuthority: string;
+
+    wsolVault?: string;
+    tokenVault?: string;
 }
 
 export type PnlTokens = { [key in string]: PnlToken };;
